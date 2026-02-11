@@ -1,0 +1,16 @@
+{
+  "title": "서울시 주거 현황",
+  "source": "한국부동산원, 서울시",
+  "items": [
+    { "metric": "아파트 평균 매매가", "value": "12.8억원", "year": 2024, "source": "한국부동산원" },
+    { "metric": "아파트 평균 전세가", "value": "6.2억원", "year": 2024, "source": "한국부동산원" },
+    { "metric": "PIR(소득대비주택가격)", "value": 15.2, "year": 2024, "source": "KB경영연구소" },
+    { "metric": "공공임대주택 재고율", "value": 8.1, "year": 2024, "source": "국토부" },
+    { "metric": "연간 주택 인허가", "value": 4.2, "year": 2023, "source": "서울시", "unit": "만호" },
+    { "metric": "재개발·재건축 정비구역", "value": 358, "year": 2024, "source": "서울시", "unit": "곳" },
+    { "metric": "청년 주거비 부담률", "value": 33.5, "year": 2024, "source": "서울연구원", "unit": "%" },
+    { "metric": "공공분양 경쟁률 평균", "value": "42:1", "year": 2024, "source": "SH공사" },
+    { "metric": "역세권 용적률 완화 적용지", "value": 128, "year": 2024, "source": "서울시", "unit": "곳" },
+    { "metric": "빈집 수", "value": 7.8, "year": 2023, "source": "통계청", "unit": "만호" }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "서울시 안전 현황",
+  "source": "서울시, 경찰청",
+  "items": [
+    { "metric": "5대 범죄 발생건수", "value": 78500, "year": 2023, "source": "경찰청", "unit": "건" },
+    { "metric": "CCTV 설치대수", "value": 88200, "year": 2024, "source": "서울시", "unit": "대" },
+    { "metric": "안전지킴이집", "value": 18500, "year": 2024, "source": "서울시", "unit": "곳" },
+    { "metric": "1인당 소방관 수", "value": 0.82, "year": 2024, "source": "소방청", "unit": "명/1000명" },
+    { "metric": "재난안전예산 비율", "value": 6.8, "year": 2024, "source": "서울시", "unit": "%" },
+    { "metric": "노후건축물(30년 이상)", "value": 35.2, "year": 2024, "source": "서울시", "unit": "%" },
+    { "metric": "침수취약지역", "value": 42, "year": 2024, "source": "서울시", "unit": "곳" },
+    { "metric": "디지털 성범죄 신고", "value": 3200, "year": 2023, "source": "경찰청", "unit": "건" },
+    { "metric": "심야 여성안심귀가 이용", "value": 85000, "year": 2023, "source": "서울시", "unit": "건/년" },
+    { "metric": "지진 대피소", "value": 4520, "year": 2024, "source": "서울시", "unit": "곳" }
+  ]
+}

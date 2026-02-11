@@ -1,0 +1,18 @@
+{
+  "title": "서울시 예산 현황",
+  "source": "서울시 재정공시",
+  "items": [
+    { "category": "총예산", "amount": 46.8, "year": 2024, "unit": "조원", "change": 3.2 },
+    { "category": "복지", "amount": 14.2, "year": 2024, "unit": "조원", "change": 5.1 },
+    { "category": "교통", "amount": 5.8, "year": 2024, "unit": "조원", "change": 2.8 },
+    { "category": "도시안전", "amount": 3.2, "year": 2024, "unit": "조원", "change": 4.5 },
+    { "category": "교육", "amount": 2.9, "year": 2024, "unit": "조원", "change": 1.2 },
+    { "category": "문화관광", "amount": 1.8, "year": 2024, "unit": "조원", "change": 6.3 },
+    { "category": "환경", "amount": 2.1, "year": 2024, "unit": "조원", "change": 3.7 },
+    { "category": "주택", "amount": 4.5, "year": 2024, "unit": "조원", "change": 8.2 },
+    { "category": "경제산업", "amount": 2.3, "year": 2024, "unit": "조원", "change": -1.5 },
+    { "category": "보건의료", "amount": 1.7, "year": 2024, "unit": "조원", "change": 12.3 },
+    { "category": "채무잔액", "amount": 8.2, "year": 2024, "unit": "조원", "change": -2.1 },
+    { "category": "재정자립도", "amount": 78.5, "year": 2024, "unit": "%", "change": -0.3 }
+  ]
+}

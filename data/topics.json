@@ -1,0 +1,40 @@
+{
+  "topics": [
+    {
+      "id": "housing",
+      "title": "주거·부동산",
+      "description": "집값 안정, 공공주택 공급, 재개발·재건축 정책",
+      "dataKeys": ["seoul-housing", "seoul-budget", "seoul-population"]
+    },
+    {
+      "id": "transportation",
+      "title": "교통·도시인프라",
+      "description": "대중교통 확충, 교통혼잡 해소, GTX·경전철 등",
+      "dataKeys": ["seoul-transportation", "seoul-budget"]
+    },
+    {
+      "id": "safety",
+      "title": "안전·치안",
+      "description": "범죄예방, 재난대비, 디지털 안전, 여성안전",
+      "dataKeys": ["seoul-safety", "seoul-budget"]
+    },
+    {
+      "id": "environment",
+      "title": "환경·기후",
+      "description": "미세먼지, 탄소중립, 녹지확충, 에너지 전환",
+      "dataKeys": ["seoul-environment", "seoul-budget"]
+    },
+    {
+      "id": "economy",
+      "title": "경제·일자리",
+      "description": "청년일자리, 소상공인, 산업육성, 지역경제",
+      "dataKeys": ["seoul-budget", "seoul-population"]
+    },
+    {
+      "id": "welfare",
+      "title": "복지·돌봄",
+      "description": "저출생 대책, 고령화, 복지사각지대, 보육",
+      "dataKeys": ["seoul-budget", "seoul-population"]
+    }
+  ]
+}

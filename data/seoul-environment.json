@@ -1,0 +1,16 @@
+{
+  "title": "서울시 환경 현황",
+  "source": "서울시 환경정책과, 환경부",
+  "items": [
+    { "metric": "연평균 미세먼지(PM2.5)", "value": 18.2, "year": 2024, "source": "서울시", "unit": "㎍/㎥" },
+    { "metric": "1인당 공원면적", "value": 16.8, "year": 2024, "source": "서울시", "unit": "㎡" },
+    { "metric": "온실가스 배출량", "value": 4620, "year": 2023, "source": "환경부", "unit": "만tCO2" },
+    { "metric": "재활용률", "value": 66.8, "year": 2023, "source": "서울시", "unit": "%" },
+    { "metric": "생활폐기물 발생량", "value": 0.96, "year": 2023, "source": "서울시", "unit": "kg/인/일" },
+    { "metric": "전기차 등록대수", "value": 15.8, "year": 2024, "source": "서울시", "unit": "만대" },
+    { "metric": "태양광 발전시설 용량", "value": 485, "year": 2024, "source": "서울시", "unit": "MW" },
+    { "metric": "한강수질(BOD)", "value": 1.8, "year": 2024, "source": "환경부", "unit": "mg/L" },
+    { "metric": "녹지율", "value": 28.3, "year": 2024, "source": "서울시", "unit": "%" },
+    { "metric": "탄소중립 목표연도", "value": 2050, "year": 2024, "source": "서울시", "unit": "년" }
+  ]
+}

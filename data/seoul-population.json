@@ -1,0 +1,32 @@
+{
+  "title": "서울시 인구 현황",
+  "source": "서울시 주민등록인구통계",
+  "summary": {
+    "totalPopulation": 941.6,
+    "unit": "만명",
+    "year": 2024,
+    "households": 437.2,
+    "householdUnit": "만가구",
+    "averageAge": 43.8,
+    "birthRate": 0.55,
+    "agingRate": 18.2
+  },
+  "districts": [
+    { "district": "송파구", "population": 66.8, "year": 2024, "change": -0.3 },
+    { "district": "강서구", "population": 57.2, "year": 2024, "change": -0.5 },
+    { "district": "강남구", "population": 54.1, "year": 2024, "change": 0.2 },
+    { "district": "노원구", "population": 51.3, "year": 2024, "change": -1.2 },
+    { "district": "관악구", "population": 48.9, "year": 2024, "change": -0.8 },
+    { "district": "은평구", "population": 47.6, "year": 2024, "change": -0.6 },
+    { "district": "중랑구", "population": 39.2, "year": 2024, "change": -0.9 },
+    { "district": "성북구", "population": 42.5, "year": 2024, "change": -0.7 },
+    { "district": "마포구", "population": 37.8, "year": 2024, "change": 0.1 },
+    { "district": "양천구", "population": 44.1, "year": 2024, "change": -0.4 }
+  ],
+  "trends": [
+    { "metric": "1인 가구 비율", "value": 39.8, "year": 2024, "unit": "%" },
+    { "metric": "외국인 주민수", "value": 42.3, "year": 2024, "unit": "만명" },
+    { "metric": "생산연령인구(15-64세) 비율", "value": 72.1, "year": 2024, "unit": "%" },
+    { "metric": "순유출인구", "value": 5.8, "year": 2023, "unit": "만명/년" }
+  ]
+}
