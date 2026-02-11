@@ -1,24 +1,15 @@
 // Debate state machine phases
 export type DebatePhase =
   | "setup"
+  | "landing"
   | "intro"
   | "human-turn"
   | "processing"
   | "factcheck-display"
   | "ai-turn"
   | "transition"
+  | "cooperation"
   | "closing";
-
-// AI opponent persona types
-export type PersonaType = "aggressive" | "data-driven" | "emotional";
-
-export interface Persona {
-  id: PersonaType;
-  name: string;
-  title: string;
-  description: string;
-  color: string;
-}
 
 // Debate topic
 export interface Topic {
@@ -31,8 +22,6 @@ export interface Topic {
 // Debate configuration from setup screen
 export interface DebateConfig {
   candidateName: string;
-  candidateParty: string;
-  persona: PersonaType;
   topics: string[]; // topic IDs
   roundCount: number;
   turnDuration: number; // seconds
@@ -72,7 +61,6 @@ export interface DebateState {
 // API request/response types
 export interface DebateRequest {
   messages: DebateMessage[];
-  persona: PersonaType;
   topic: string;
   candidateName: string;
   round: number;

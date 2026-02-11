@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Virtual Debate: SEOUL - 서울시장 가상 토론",
+  title: "홍봇 vs. 홍근 - 서울시장 AI 가상 토론",
   description:
-    "AI 상대 후보와 가상 토론을 진행하는 서울시장 선거 시뮬레이션",
+    "AI 후보 홍봇과 인간 정치인 홍근의 서울시장 가상 토론 시뮬레이션",
 };
 
 export default function RootLayout({

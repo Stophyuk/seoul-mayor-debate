@@ -9,16 +9,14 @@ import {
   DebatePhase,
 } from "@/types/debate";
 import { getNextPhase, generateMessageId } from "@/lib/debate-engine";
-import { getPersonaName } from "@/lib/prompts";
+import { HONGBOT_NAME } from "@/lib/prompts";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import topicsData from "@/data/topics.json";
 
 const INITIAL_STATE: DebateState = {
-  phase: "setup",
+  phase: "landing",
   config: {
-    candidateName: "",
-    candidateParty: "",
-    persona: "aggressive",
+    candidateName: "홍근",
     topics: [],
     roundCount: 3,
     turnDuration: 120,
@@ -37,7 +35,7 @@ export function useDebate() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { isPlaying, playFromBlob, stop: stopAudio } = useAudioPlayer();
 
-  const opponentName = getPersonaName(state.config.persona);
+  const opponentName = HONGBOT_NAME;
 
   // Timer management
   const startTimer = useCallback(
@@ -94,6 +92,11 @@ export function useDebate() {
     setState((s) => ({ ...s, phase }));
   }, []);
 
+  // Go to setup screen from landing
+  const goToSetup = useCallback(() => {
+    setState((s) => ({ ...s, phase: "setup" }));
+  }, []);
+
   // Start debate
   const startDebate = useCallback(
     async (config: DebateConfig) => {
@@ -110,7 +113,6 @@ export function useDebate() {
         const topicTitle =
           topicsData.topics.find((t) => t.id === firstTopic)?.title ??
           firstTopic;
-        const personaName = getPersonaName(config.persona);
 
         const res = await fetch("/api/moderate", {
           method: "POST",
@@ -122,7 +124,7 @@ export function useDebate() {
             round: 1,
             totalRounds: config.roundCount,
             candidateName: config.candidateName,
-            opponentName: personaName,
+            opponentName: HONGBOT_NAME,
           }),
         });
 
@@ -195,7 +197,6 @@ export function useDebate() {
                 timestamp: Date.now(),
               },
             ],
-            persona: state.config.persona,
             topic: state.currentTopic,
             candidateName: state.config.candidateName,
             round: state.currentRound,
@@ -277,7 +278,7 @@ export function useDebate() {
     ]
   );
 
-  // Advance to next round or closing
+  // Advance to next round, cooperation, or closing
   const advanceRound = useCallback(async () => {
     const nextPhase = getNextPhase(
       "transition",
@@ -285,16 +286,16 @@ export function useDebate() {
       state.config.roundCount
     );
 
-    if (nextPhase === "closing") {
-      setState((s) => ({ ...s, phase: "closing", isProcessing: true }));
-      // Generate closing remarks
+    if (nextPhase === "cooperation") {
+      // Generate cooperation declaration
+      setState((s) => ({ ...s, phase: "cooperation", isProcessing: true }));
       try {
         const res = await fetch("/api/moderate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: state.messages.slice(-4),
-            phase: "closing",
+            phase: "cooperation",
             topic: state.currentTopic,
             round: state.currentRound,
             totalRounds: state.config.roundCount,
@@ -363,6 +364,38 @@ export function useDebate() {
     startTimer,
   ]);
 
+  // Advance from cooperation to closing
+  const advanceToClosing = useCallback(async () => {
+    setState((s) => ({ ...s, phase: "closing", isProcessing: true }));
+    try {
+      const res = await fetch("/api/moderate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: state.messages.slice(-4),
+          phase: "closing",
+          topic: state.currentTopic,
+          round: state.currentRound,
+          totalRounds: state.config.roundCount,
+          candidateName: state.config.candidateName,
+          opponentName,
+        }),
+      });
+      const data = await res.json();
+      addMessage("moderator", "김진행", data.response);
+    } catch {
+      // non-critical
+    }
+    setState((s) => ({ ...s, isProcessing: false }));
+  }, [
+    state.messages,
+    state.config,
+    state.currentTopic,
+    state.currentRound,
+    opponentName,
+    addMessage,
+  ]);
+
   // Reset everything
   const resetDebate = useCallback(() => {
     stopTimer();
@@ -373,9 +406,11 @@ export function useDebate() {
     state,
     opponentName,
     isPlaying,
+    goToSetup,
     startDebate,
     submitSpeech,
     advanceRound,
+    advanceToClosing,
     resetDebate,
     setPhase,
     stopTimer,

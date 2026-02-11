@@ -34,7 +34,7 @@ export function getIntroPrompt(
   return `지금 ${round}/${totalRounds} 라운드입니다. 주제는 "${topic}"입니다.
 
 ${round === 1
-    ? `토론 시작을 알리는 오프닝 멘트를 해주세요. 두 후보(${candidateName}, ${opponentName})를 소개하고, 첫 번째 주제를 안내하세요.`
+    ? `토론 시작을 알리는 오프닝 멘트를 해주세요. 두 후보(${candidateName}, ${opponentName})를 소개하고, 첫 번째 주제를 안내하세요. ${opponentName}은 AI 후보라는 점을 흥미롭게 언급해주세요.`
     : `새로운 라운드 시작을 알리고, 이번 주제 "${topic}"를 소개하세요. ${candidateName} 후보에게 먼저 발언을 요청하세요.`
   }`;
 }
@@ -52,4 +52,23 @@ ${nextTopic
     ? `다음 주제 "${nextTopic}"로 넘어가는 전환 멘트를 해주세요. 이전 토론을 간단히 정리하고, ${candidateName} 후보에게 다음 주제 발언을 요청하세요.`
     : `토론을 마무리하는 클로징 멘트를 해주세요. 양 후보의 열띤 토론에 감사하고, 시청자에게 인사하세요.`
   }`;
+}
+
+export function getCooperationPrompt(
+  candidateName: string,
+  opponentName: string,
+  lastMessages: string
+) {
+  return `방금까지 열띤 토론이 이어졌습니다:
+${lastMessages}
+
+이제 토론의 마지막 단계입니다. 대결을 넘어 협력을 선언하는 감동적인 순간을 만들어주세요.
+
+핵심 메시지:
+- "${opponentName}의 머리(데이터·분석력)와 ${candidateName}의 심장(경험·공감력)이 만나면 서울은 더 나은 도시가 될 수 있습니다"
+- ${candidateName}이 시장으로서 시민과 소통하고, ${opponentName}이 AI 비서로서 데이터 분석을 담당하는 협력의 미래상을 제시
+- 대결에서 협력으로 전환되는 감동적인 분위기를 연출
+- "오늘 토론은 대결로 시작했지만, 협력의 약속으로 마무리됩니다"
+
+톤: 감동적이면서도 희망적, 2~4문장으로 간결하게`;
 }

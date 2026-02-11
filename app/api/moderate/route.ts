@@ -4,6 +4,7 @@ import {
   getModeratorPrompt,
   getIntroPrompt,
   getTransitionPrompt,
+  getCooperationPrompt,
 } from "@/lib/prompts";
 import { ModerateRequest } from "@/types/debate";
 
@@ -31,6 +32,17 @@ export async function POST(req: NextRequest) {
         topic,
         round,
         totalRounds
+      );
+    } else if (phase === "cooperation") {
+      const lastMessages = messages
+        .slice(-4)
+        .map((m) => `[${m.speaker}] ${m.content}`)
+        .join("\n");
+
+      userPrompt = getCooperationPrompt(
+        candidateName,
+        opponentName,
+        lastMessages
       );
     } else if (phase === "transition" || phase === "closing") {
       const lastMessages = messages

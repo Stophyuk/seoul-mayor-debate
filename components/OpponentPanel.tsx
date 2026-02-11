@@ -1,22 +1,19 @@
 "use client";
 
-import { DebateMessage, PersonaType } from "@/types/debate";
-import { PERSONAS } from "@/lib/prompts";
+import { DebateMessage } from "@/types/debate";
+import { HONGBOT_INFO } from "@/lib/prompts";
 
 interface OpponentPanelProps {
-  persona: PersonaType;
   messages: DebateMessage[];
   isActive: boolean;
   isProcessing: boolean;
 }
 
 export default function OpponentPanel({
-  persona,
   messages,
   isActive,
   isProcessing,
 }: OpponentPanelProps) {
-  const info = PERSONAS[persona];
   const opponentMessages = messages.filter((m) => m.role === "opponent");
   const lastMessage = opponentMessages[opponentMessages.length - 1];
 
@@ -24,7 +21,7 @@ export default function OpponentPanel({
     <div
       className={`flex flex-col h-full rounded-xl border transition-all ${
         isActive
-          ? "border-red-500/50 bg-red-950/20"
+          ? "border-emerald-500/50 bg-emerald-950/20"
           : "border-navy-700 bg-navy-900/50"
       }`}
     >
@@ -33,15 +30,15 @@ export default function OpponentPanel({
         <div className="flex items-center gap-2">
           <div
             className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: info.color }}
+            style={{ backgroundColor: HONGBOT_INFO.color }}
           />
-          <span className="font-bold" style={{ color: info.color }}>
-            {info.name}
+          <span className="font-bold" style={{ color: HONGBOT_INFO.color }}>
+            {HONGBOT_INFO.name}
           </span>
-          <span className="text-xs text-slate-500">({info.title})</span>
+          <span className="text-xs text-slate-500">({HONGBOT_INFO.title})</span>
         </div>
         {isActive && (
-          <span className="text-xs text-red-400 font-medium">발언 중</span>
+          <span className="text-xs text-emerald-400 font-medium">발언 중</span>
         )}
       </div>
 

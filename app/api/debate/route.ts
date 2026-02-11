@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateResponse } from "@/lib/claude";
-import { getPersonaPrompt } from "@/lib/prompts";
+import { getHongbotPrompt } from "@/lib/prompts";
 import { getSeoulDataForTopic } from "@/lib/seoul-data";
 import { DebateRequest } from "@/types/debate";
 import topicsData from "@/data/topics.json";
@@ -9,7 +9,7 @@ import statementsData from "@/data/candidate-statements.json";
 export async function POST(req: NextRequest) {
   try {
     const body: DebateRequest = await req.json();
-    const { messages, persona, topic, candidateName, round } = body;
+    const { messages, topic, candidateName, round } = body;
 
     const topicInfo = topicsData.topics.find((t) => t.id === topic);
     const dataKeys = topicInfo?.dataKeys ?? [];
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       (s) => s.topic === topic
     );
 
-    const systemPrompt = `${getPersonaPrompt(persona, candidateName)}
+    const systemPrompt = `${getHongbotPrompt(candidateName)}
 
 ## 현재 라운드: ${round}
 ## 현재 주제: ${topicInfo?.title ?? topic}
