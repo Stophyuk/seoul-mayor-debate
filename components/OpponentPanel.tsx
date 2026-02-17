@@ -2,6 +2,7 @@
 
 import { DebateMessage } from "@/types/debate";
 import { HONGBOT_INFO } from "@/lib/prompts";
+import SpeechButton from "./SpeechButton";
 
 interface OpponentPanelProps {
   messages: DebateMessage[];
@@ -49,9 +50,18 @@ export default function OpponentPanel({
             <span className="typing-cursor">응답을 준비하고 있습니다</span>
           </div>
         ) : lastMessage ? (
-          <p className="text-sm text-slate-300 leading-relaxed">
-            {lastMessage.content}
-          </p>
+          <div>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              {lastMessage.content}
+            </p>
+            <div className="mt-2 flex items-center gap-1">
+              <SpeechButton
+                text={lastMessage.content}
+                voiceType="opponent"
+              />
+              <span className="text-xs text-slate-600">음성으로 듣기</span>
+            </div>
+          </div>
         ) : (
           <p className="text-sm text-slate-600 italic">발언 대기 중...</p>
         )}

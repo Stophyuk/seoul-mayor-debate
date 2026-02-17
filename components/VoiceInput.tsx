@@ -1,13 +1,20 @@
 "use client";
 
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface VoiceInputProps {
   onSubmit: (text: string) => void;
   disabled: boolean;
   timeRemaining: number;
 }
+
+const STATUS_LABELS: Record<string, string> = {
+  idle: "대기",
+  connecting: "연결 중...",
+  active: "인식 중",
+  reconnecting: "재연결 중...",
+};
 
 export default function VoiceInput({
   onSubmit,
@@ -17,6 +24,7 @@ export default function VoiceInput({
   const {
     isListening,
     transcript,
+    status,
     startListening,
     stopListening,
     resetTranscript,
@@ -26,10 +34,18 @@ export default function VoiceInput({
   const [textInput, setTextInput] = useState("");
   const [mode, setMode] = useState<"text" | "voice">("text");
 
+  // Track transcript via ref for auto-submit to avoid unnecessary effect runs
+  const transcriptRef = useRef(transcript);
+  transcriptRef.current = transcript;
+
+  const textInputRef = useRef(textInput);
+  textInputRef.current = textInput;
+
   // Auto-submit when time expires
   useEffect(() => {
     if (timeRemaining === 0 && !disabled) {
-      const text = mode === "voice" ? transcript : textInput;
+      const text =
+        mode === "voice" ? transcriptRef.current : textInputRef.current;
       if (text.trim()) {
         if (isListening) stopListening();
         onSubmit(text.trim());
@@ -37,17 +53,7 @@ export default function VoiceInput({
         resetTranscript();
       }
     }
-  }, [
-    timeRemaining,
-    disabled,
-    mode,
-    transcript,
-    textInput,
-    isListening,
-    stopListening,
-    onSubmit,
-    resetTranscript,
-  ]);
+  }, [timeRemaining, disabled, mode, isListening, stopListening, onSubmit, resetTranscript]);
 
   const handleSubmit = () => {
     const text = mode === "voice" ? transcript : textInput;
@@ -66,6 +72,8 @@ export default function VoiceInput({
       startListening();
     }
   };
+
+  const statusLabel = STATUS_LABELS[status] ?? "";
 
   return (
     <div className="space-y-2">
@@ -116,11 +124,15 @@ export default function VoiceInput({
               disabled={disabled}
               className={`flex-1 py-2 rounded-lg font-medium text-sm transition-all ${
                 isListening
-                  ? "bg-red-600 text-white animate-pulse"
+                  ? status === "reconnecting"
+                    ? "bg-yellow-600 text-white"
+                    : "bg-red-600 text-white animate-pulse"
                   : "bg-navy-700 text-slate-300 hover:bg-navy-600"
               } disabled:opacity-40`}
             >
-              {isListening ? "● 녹음 중..." : "🎤 발언 시작"}
+              {isListening
+                ? `● ${statusLabel}`
+                : "🎤 발언 시작"}
             </button>
             <button
               type="button"

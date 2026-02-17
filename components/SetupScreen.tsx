@@ -12,8 +12,6 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
   const [candidateName, setCandidateName] = useState("홍근");
   const [topics, setTopics] = useState<string[]>(["housing"]);
   const [roundCount, setRoundCount] = useState(3);
-  const [ttsEnabled, setTtsEnabled] = useState(false);
-
   const canStart = candidateName.trim().length > 0 && topics.length > 0;
 
   const handleStart = () => {
@@ -23,7 +21,6 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
       topics,
       roundCount,
       turnDuration: 120,
-      ttsEnabled,
     });
   };
 
@@ -82,18 +79,6 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
                 <option value={4}>4라운드</option>
                 <option value={5}>5라운드</option>
               </select>
-            </div>
-            <div className="flex items-center gap-2 mt-5">
-              <input
-                type="checkbox"
-                id="tts"
-                checked={ttsEnabled}
-                onChange={(e) => setTtsEnabled(e.target.checked)}
-                className="w-4 h-4 accent-emerald-400"
-              />
-              <label htmlFor="tts" className="text-sm text-slate-400">
-                음성 합성 (TTS)
-              </label>
             </div>
           </div>
 

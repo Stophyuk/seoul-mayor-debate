@@ -41,6 +41,7 @@ export default function DebateStage({ debate }: DebateStageProps) {
         totalRounds={config.roundCount}
         topic={topicTitle}
         isProcessing={state.isProcessing}
+        bridgeText={state.bridgeText}
       />
 
       {/* Main stage */}

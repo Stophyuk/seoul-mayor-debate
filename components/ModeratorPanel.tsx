@@ -2,6 +2,7 @@
 
 import { DebateMessage, DebatePhase } from "@/types/debate";
 import { getPhaseLabel } from "@/lib/debate-engine";
+import SpeechButton from "./SpeechButton";
 
 interface ModeratorPanelProps {
   messages: DebateMessage[];
@@ -10,6 +11,7 @@ interface ModeratorPanelProps {
   totalRounds: number;
   topic: string;
   isProcessing: boolean;
+  bridgeText: string | null;
 }
 
 export default function ModeratorPanel({
@@ -19,6 +21,7 @@ export default function ModeratorPanel({
   totalRounds,
   topic,
   isProcessing,
+  bridgeText,
 }: ModeratorPanelProps) {
   const lastModeratorMsg = [...messages]
     .reverse()
@@ -50,14 +53,24 @@ export default function ModeratorPanel({
 
         {/* Moderator message */}
         <div className="min-h-[2rem]">
-          {isProcessing && phase === "intro" ? (
+          {phase === "processing" && bridgeText ? (
+            <p className="text-gold-400 text-sm leading-relaxed animate-fade-in">
+              {bridgeText}
+            </p>
+          ) : isProcessing && phase === "intro" ? (
             <p className="text-slate-400 text-sm typing-cursor">
               사회자가 토론을 준비하고 있습니다
             </p>
           ) : lastModeratorMsg ? (
-            <p className="text-slate-200 text-sm leading-relaxed">
-              {lastModeratorMsg.content}
-            </p>
+            <div className="flex items-start gap-2">
+              <p className="text-slate-200 text-sm leading-relaxed flex-1">
+                {lastModeratorMsg.content}
+              </p>
+              <SpeechButton
+                text={lastModeratorMsg.content}
+                voiceType="moderator"
+              />
+            </div>
           ) : null}
         </div>
       </div>

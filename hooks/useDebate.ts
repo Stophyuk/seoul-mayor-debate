@@ -10,7 +10,7 @@ import {
 } from "@/types/debate";
 import { getNextPhase, generateMessageId } from "@/lib/debate-engine";
 import { HONGBOT_NAME } from "@/lib/prompts";
-import { useAudioPlayer } from "@/hooks/useAudioPlayer";
+import { getRandomBridgePhrase } from "@/lib/bridge-phrases";
 import topicsData from "@/data/topics.json";
 
 const INITIAL_STATE: DebateState = {
@@ -20,7 +20,6 @@ const INITIAL_STATE: DebateState = {
     topics: [],
     roundCount: 3,
     turnDuration: 120,
-    ttsEnabled: false,
   },
   currentRound: 1,
   currentTopic: "",
@@ -28,12 +27,12 @@ const INITIAL_STATE: DebateState = {
   factChecks: [],
   isProcessing: false,
   timeRemaining: 120,
+  bridgeText: null,
 };
 
 export function useDebate() {
   const [state, setState] = useState<DebateState>(INITIAL_STATE);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { isPlaying, playFromBlob, stop: stopAudio } = useAudioPlayer();
 
   const opponentName = HONGBOT_NAME;
 
@@ -162,15 +161,40 @@ export function useDebate() {
     async (text: string) => {
       stopTimer();
       addMessage("candidate", state.config.candidateName, text);
-      setState((s) => ({
-        ...s,
-        phase: "processing",
-        isProcessing: true,
-      }));
 
       const topicTitle =
         topicsData.topics.find((t) => t.id === state.currentTopic)?.title ??
         state.currentTopic;
+
+      // Generate bridge phrase and set state immediately
+      const bridgePhrase = getRandomBridgePhrase({
+        candidateName: state.config.candidateName,
+        topic: topicTitle,
+        round: state.currentRound,
+      });
+
+      setState((s) => ({
+        ...s,
+        phase: "processing",
+        isProcessing: true,
+        bridgeText: bridgePhrase,
+      }));
+
+      // Fire-and-forget: bridge TTS (independent of main flow)
+      fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: bridgePhrase, voiceType: "moderator" }),
+      })
+        .then((r) => r.blob())
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          audio.onended = () => URL.revokeObjectURL(url);
+          audio.onerror = () => URL.revokeObjectURL(url);
+          audio.play();
+        })
+        .catch(() => {}); // Graceful degradation: text fallback
 
       // Parallel: factcheck + debate response
       const [factCheckRes, debateRes] = await Promise.allSettled([
@@ -203,6 +227,9 @@ export function useDebate() {
           }),
         }).then((r) => r.json()),
       ]);
+
+      // Clear bridge text now that responses are ready
+      setState((s) => ({ ...s, bridgeText: null }));
 
       // Process factcheck results
       let checks: FactCheckResult[] = [];
@@ -238,26 +265,6 @@ export function useDebate() {
           phase: "ai-turn",
           isProcessing: false,
         }));
-
-        // TTS for AI opponent if enabled
-        if (state.config.ttsEnabled) {
-          try {
-            const ttsRes = await fetch("/api/tts", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                text: debateRes.value.response,
-                voiceType: "opponent",
-              }),
-            });
-            if (ttsRes.ok) {
-              const audioBlob = await ttsRes.blob();
-              await playFromBlob(audioBlob);
-            }
-          } catch {
-            // TTS failure is non-critical
-          }
-        }
       } else {
         setState((s) => ({
           ...s,
@@ -274,7 +281,6 @@ export function useDebate() {
       opponentName,
       addMessage,
       stopTimer,
-      playFromBlob,
     ]
   );
 
@@ -405,7 +411,6 @@ export function useDebate() {
   return {
     state,
     opponentName,
-    isPlaying,
     goToSetup,
     startDebate,
     submitSpeech,
@@ -414,6 +419,5 @@ export function useDebate() {
     resetDebate,
     setPhase,
     stopTimer,
-    stopAudio,
   };
 }

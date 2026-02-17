@@ -25,7 +25,6 @@ export interface DebateConfig {
   topics: string[]; // topic IDs
   roundCount: number;
   turnDuration: number; // seconds
-  ttsEnabled: boolean;
 }
 
 // Single message in transcript
@@ -56,6 +55,7 @@ export interface DebateState {
   factChecks: FactCheckResult[];
   isProcessing: boolean;
   timeRemaining: number;
+  bridgeText: string | null;
 }
 
 // API request/response types
