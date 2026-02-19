@@ -28,6 +28,7 @@ const INITIAL_STATE: DebateState = {
   isProcessing: false,
   timeRemaining: 120,
   bridgeText: null,
+  error: null,
 };
 
 export function useDebate() {
@@ -36,25 +37,7 @@ export function useDebate() {
 
   const opponentName = HONGBOT_NAME;
 
-  // Timer management
-  const startTimer = useCallback(
-    (duration?: number) => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      const d = duration ?? state.config.turnDuration;
-      setState((s) => ({ ...s, timeRemaining: d }));
-      timerRef.current = setInterval(() => {
-        setState((s) => {
-          if (s.timeRemaining <= 1) {
-            if (timerRef.current) clearInterval(timerRef.current);
-            return { ...s, timeRemaining: 0 };
-          }
-          return { ...s, timeRemaining: s.timeRemaining - 1 };
-        });
-      }, 1000);
-    },
-    [state.config.turnDuration]
-  );
-
+  // Timer kept for internal compatibility but no longer started
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -65,6 +48,11 @@ export function useDebate() {
   useEffect(() => {
     return () => stopTimer();
   }, [stopTimer]);
+
+  // Error management
+  const clearError = useCallback(() => {
+    setState((s) => ({ ...s, error: null }));
+  }, []);
 
   // Add a message to the transcript
   const addMessage = useCallback(
@@ -96,6 +84,16 @@ export function useDebate() {
     setState((s) => ({ ...s, phase: "setup" }));
   }, []);
 
+  // Track last action for retry
+  const lastActionRef = useRef<(() => Promise<void>) | null>(null);
+
+  const retryLastAction = useCallback(() => {
+    clearError();
+    if (lastActionRef.current) {
+      lastActionRef.current();
+    }
+  }, [clearError]);
+
   // Start debate
   const startDebate = useCallback(
     async (config: DebateConfig) => {
@@ -106,60 +104,65 @@ export function useDebate() {
         phase: "intro",
         currentTopic: firstTopic,
         isProcessing: true,
+        error: null,
       });
 
-      try {
-        const topicTitle =
-          topicsData.topics.find((t) => t.id === firstTopic)?.title ??
-          firstTopic;
+      const action = async () => {
+        try {
+          const topicTitle =
+            topicsData.topics.find((t) => t.id === firstTopic)?.title ??
+            firstTopic;
 
-        const res = await fetch("/api/moderate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [],
-            phase: "intro",
-            topic: topicTitle,
-            round: 1,
-            totalRounds: config.roundCount,
-            candidateName: config.candidateName,
-            opponentName: HONGBOT_NAME,
-          }),
-        });
+          const res = await fetch("/api/moderate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [],
+              phase: "intro",
+              topic: topicTitle,
+              round: 1,
+              totalRounds: config.roundCount,
+              candidateName: config.candidateName,
+              opponentName: HONGBOT_NAME,
+            }),
+          });
 
-        const data = await res.json();
-        const msg: DebateMessage = {
-          id: generateMessageId(),
-          role: "moderator",
-          speaker: "김진행",
-          content: data.response,
-          timestamp: Date.now(),
-        };
+          if (!res.ok) throw new Error(`서버 오류 (${res.status})`);
 
-        setState((s) => ({
-          ...s,
-          messages: [msg],
-          isProcessing: false,
-          phase: "human-turn",
-          timeRemaining: config.turnDuration,
-        }));
-        startTimer(config.turnDuration);
-      } catch {
-        setState((s) => ({
-          ...s,
-          isProcessing: false,
-          phase: "human-turn",
-        }));
-        startTimer(config.turnDuration);
-      }
+          const data = await res.json();
+          const msg: DebateMessage = {
+            id: generateMessageId(),
+            role: "moderator",
+            speaker: "김진행",
+            content: data.response,
+            timestamp: Date.now(),
+          };
+
+          setState((s) => ({
+            ...s,
+            messages: [msg],
+            isProcessing: false,
+            phase: "human-turn",
+          }));
+        } catch (err) {
+          setState((s) => ({
+            ...s,
+            isProcessing: false,
+            phase: "human-turn",
+            error: err instanceof Error ? err.message : "토론 시작 중 오류가 발생했습니다",
+          }));
+        }
+      };
+
+      lastActionRef.current = action;
+      await action();
     },
-    [startTimer]
+    []
   );
 
   // Submit human candidate's speech
   const submitSpeech = useCallback(
     async (text: string) => {
-      stopTimer();
       addMessage("candidate", state.config.candidateName, text);
 
       const topicTitle =
@@ -178,100 +181,129 @@ export function useDebate() {
         phase: "processing",
         isProcessing: true,
         bridgeText: bridgePhrase,
+        error: null,
       }));
 
-      // Fire-and-forget: bridge TTS (independent of main flow)
-      fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: bridgePhrase, voiceType: "moderator" }),
-      })
-        .then((r) => r.blob())
-        .then((blob) => {
-          const url = URL.createObjectURL(blob);
-          const audio = new Audio(url);
-          audio.onended = () => URL.revokeObjectURL(url);
-          audio.onerror = () => URL.revokeObjectURL(url);
-          audio.play();
+      const action = async () => {
+        // Fire-and-forget: bridge TTS (independent of main flow)
+        fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: bridgePhrase, voiceType: "moderator" }),
         })
-        .catch(() => {}); // Graceful degradation: text fallback
+          .then((r) => r.blob())
+          .then((blob) => {
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.onended = () => URL.revokeObjectURL(url);
+            audio.onerror = () => URL.revokeObjectURL(url);
+            audio.play();
+          })
+          .catch(() => {}); // Graceful degradation: text fallback
 
-      // Parallel: factcheck + debate response
-      const [factCheckRes, debateRes] = await Promise.allSettled([
-        fetch("/api/factcheck", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            statement: text,
-            speaker: state.config.candidateName,
-            topic: state.currentTopic,
-          }),
-        }).then((r) => r.json()),
-        fetch("/api/debate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [
-              ...state.messages,
-              {
-                id: "temp",
-                role: "candidate",
+        try {
+          // Parallel: factcheck + debate response
+          const [factCheckRes, debateRes] = await Promise.allSettled([
+            fetch("/api/factcheck", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                statement: text,
                 speaker: state.config.candidateName,
-                content: text,
-                timestamp: Date.now(),
-              },
-            ],
-            topic: state.currentTopic,
-            candidateName: state.config.candidateName,
-            round: state.currentRound,
-          }),
-        }).then((r) => r.json()),
-      ]);
+                topic: state.currentTopic,
+              }),
+            }).then((r) => {
+              if (!r.ok) throw new Error(`팩트체크 오류 (${r.status})`);
+              return r.json();
+            }),
+            fetch("/api/debate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                messages: [
+                  ...state.messages,
+                  {
+                    id: "temp",
+                    role: "candidate",
+                    speaker: state.config.candidateName,
+                    content: text,
+                    timestamp: Date.now(),
+                  },
+                ],
+                topic: state.currentTopic,
+                candidateName: state.config.candidateName,
+                round: state.currentRound,
+              }),
+            }).then((r) => {
+              if (!r.ok) throw new Error(`AI 응답 오류 (${r.status})`);
+              return r.json();
+            }),
+          ]);
 
-      // Clear bridge text now that responses are ready
-      setState((s) => ({ ...s, bridgeText: null }));
+          // Clear bridge text now that responses are ready
+          setState((s) => ({ ...s, bridgeText: null }));
 
-      // Process factcheck results
-      let checks: FactCheckResult[] = [];
-      if (factCheckRes.status === "fulfilled" && factCheckRes.value.checks) {
-        checks = factCheckRes.value.checks;
-      }
+          // Process factcheck results
+          let checks: FactCheckResult[] = [];
+          if (factCheckRes.status === "fulfilled" && factCheckRes.value.checks) {
+            checks = factCheckRes.value.checks;
+          }
 
-      if (checks.length > 0) {
-        setState((s) => ({
-          ...s,
-          factChecks: [...s.factChecks, ...checks],
-          phase: "factcheck-display",
-          isProcessing: false,
-        }));
+          if (checks.length > 0) {
+            setState((s) => ({
+              ...s,
+              factChecks: [...s.factChecks, ...checks],
+              phase: "factcheck-display",
+              isProcessing: false,
+            }));
 
-        // Show factcheck for 3 seconds, then proceed to AI turn
-        await new Promise((r) => setTimeout(r, 3000));
-      }
+            // Show factcheck for 3 seconds, then proceed to AI turn
+            await new Promise((r) => setTimeout(r, 3000));
+          }
 
-      // Process AI response
-      if (debateRes.status === "fulfilled" && debateRes.value.response) {
-        const aiMsg: DebateMessage = {
-          id: generateMessageId(),
-          role: "opponent",
-          speaker: opponentName,
-          content: debateRes.value.response,
-          timestamp: Date.now(),
-        };
+          // Process AI response
+          if (debateRes.status === "fulfilled" && debateRes.value.response) {
+            const aiMsg: DebateMessage = {
+              id: generateMessageId(),
+              role: "opponent",
+              speaker: opponentName,
+              content: debateRes.value.response,
+              timestamp: Date.now(),
+            };
 
-        setState((s) => ({
-          ...s,
-          messages: [...s.messages, aiMsg],
-          phase: "ai-turn",
-          isProcessing: false,
-        }));
-      } else {
-        setState((s) => ({
-          ...s,
-          phase: "ai-turn",
-          isProcessing: false,
-        }));
-      }
+            setState((s) => ({
+              ...s,
+              messages: [...s.messages, aiMsg],
+              phase: "ai-turn",
+              isProcessing: false,
+            }));
+          } else if (debateRes.status === "rejected") {
+            setState((s) => ({
+              ...s,
+              phase: "ai-turn",
+              isProcessing: false,
+              error: "AI 응답을 가져오지 못했습니다. 재시도해 주세요.",
+            }));
+          } else {
+            setState((s) => ({
+              ...s,
+              phase: "ai-turn",
+              isProcessing: false,
+            }));
+          }
+        } catch (err) {
+          setState((s) => ({
+            ...s,
+            bridgeText: null,
+            phase: "ai-turn",
+            isProcessing: false,
+            error: err instanceof Error ? err.message : "응답 처리 중 오류가 발생했습니다",
+          }));
+        }
+      };
+
+      lastActionRef.current = action;
+      await action();
     },
     [
       state.messages,
@@ -280,7 +312,6 @@ export function useDebate() {
       state.currentRound,
       opponentName,
       addMessage,
-      stopTimer,
     ]
   );
 
@@ -294,7 +325,7 @@ export function useDebate() {
 
     if (nextPhase === "cooperation") {
       // Generate cooperation declaration
-      setState((s) => ({ ...s, phase: "cooperation", isProcessing: true }));
+      setState((s) => ({ ...s, phase: "cooperation", isProcessing: true, error: null }));
       try {
         const res = await fetch("/api/moderate", {
           method: "POST",
@@ -309,10 +340,14 @@ export function useDebate() {
             opponentName,
           }),
         });
+        if (!res.ok) throw new Error(`서버 오류 (${res.status})`);
         const data = await res.json();
         addMessage("moderator", "김진행", data.response);
-      } catch {
-        // non-critical
+      } catch (err) {
+        setState((s) => ({
+          ...s,
+          error: err instanceof Error ? err.message : "협력 단계 전환 중 오류가 발생했습니다",
+        }));
       }
       setState((s) => ({ ...s, isProcessing: false }));
       return;
@@ -331,6 +366,7 @@ export function useDebate() {
       currentTopic: nextTopic,
       phase: "transition",
       isProcessing: true,
+      error: null,
     }));
 
     try {
@@ -347,19 +383,21 @@ export function useDebate() {
           opponentName,
         }),
       });
+      if (!res.ok) throw new Error(`서버 오류 (${res.status})`);
       const data = await res.json();
       addMessage("moderator", "김진행", data.response);
-    } catch {
-      // non-critical
+    } catch (err) {
+      setState((s) => ({
+        ...s,
+        error: err instanceof Error ? err.message : "라운드 전환 중 오류가 발생했습니다",
+      }));
     }
 
     setState((s) => ({
       ...s,
       isProcessing: false,
       phase: "human-turn",
-      timeRemaining: state.config.turnDuration,
     }));
-    startTimer();
   }, [
     state.currentRound,
     state.config,
@@ -367,12 +405,11 @@ export function useDebate() {
     state.messages,
     opponentName,
     addMessage,
-    startTimer,
   ]);
 
   // Advance from cooperation to closing
   const advanceToClosing = useCallback(async () => {
-    setState((s) => ({ ...s, phase: "closing", isProcessing: true }));
+    setState((s) => ({ ...s, phase: "closing", isProcessing: true, error: null }));
     try {
       const res = await fetch("/api/moderate", {
         method: "POST",
@@ -387,10 +424,14 @@ export function useDebate() {
           opponentName,
         }),
       });
+      if (!res.ok) throw new Error(`서버 오류 (${res.status})`);
       const data = await res.json();
       addMessage("moderator", "김진행", data.response);
-    } catch {
-      // non-critical
+    } catch (err) {
+      setState((s) => ({
+        ...s,
+        error: err instanceof Error ? err.message : "마무리 단계 전환 중 오류가 발생했습니다",
+      }));
     }
     setState((s) => ({ ...s, isProcessing: false }));
   }, [
@@ -419,5 +460,7 @@ export function useDebate() {
     resetDebate,
     setPhase,
     stopTimer,
+    clearError,
+    retryLastAction,
   };
 }

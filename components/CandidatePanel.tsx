@@ -1,7 +1,7 @@
 "use client";
 
 import { DebateMessage } from "@/types/debate";
-import TimerDisplay from "./TimerDisplay";
+import { renderMarkdown } from "@/lib/render-markdown";
 import VoiceInput from "./VoiceInput";
 
 interface CandidatePanelProps {
@@ -9,7 +9,6 @@ interface CandidatePanelProps {
   party: string;
   messages: DebateMessage[];
   isActive: boolean;
-  timeRemaining: number;
   onSubmit: (text: string) => void;
   isProcessing: boolean;
 }
@@ -19,7 +18,6 @@ export default function CandidatePanel({
   party,
   messages,
   isActive,
-  timeRemaining,
   onSubmit,
   isProcessing,
 }: CandidatePanelProps) {
@@ -30,21 +28,21 @@ export default function CandidatePanel({
     <div
       className={`flex flex-col h-full rounded-xl border transition-all ${
         isActive
-          ? "border-blue-500/50 bg-blue-950/20"
+          ? "border-amber-500/50 bg-amber-950/20"
           : "border-navy-700 bg-navy-900/50"
       }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-navy-700">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-blue-500" />
-          <span className="font-bold text-blue-400">{name}</span>
+          <div className="w-3 h-3 rounded-full bg-amber-500" />
+          <span className="font-bold text-amber-400 text-base">{name}</span>
           {party && (
             <span className="text-xs text-slate-500">({party})</span>
           )}
         </div>
         {isActive && (
-          <TimerDisplay seconds={timeRemaining} isActive={isActive} />
+          <span className="text-xs text-amber-400 font-medium">발언 중</span>
         )}
       </div>
 
@@ -54,14 +52,13 @@ export default function CandidatePanel({
           <VoiceInput
             onSubmit={onSubmit}
             disabled={isProcessing}
-            timeRemaining={timeRemaining}
           />
         ) : lastMessage ? (
-          <p className="text-sm text-slate-300 leading-relaxed">
-            {lastMessage.content}
+          <p className="text-base text-slate-300 leading-relaxed">
+            {renderMarkdown(lastMessage.content)}
           </p>
         ) : (
-          <p className="text-sm text-slate-600 italic">
+          <p className="text-base text-slate-600 italic">
             발언 대기 중...
           </p>
         )}

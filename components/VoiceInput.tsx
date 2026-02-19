@@ -1,12 +1,11 @@
 "use client";
 
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 
 interface VoiceInputProps {
   onSubmit: (text: string) => void;
   disabled: boolean;
-  timeRemaining: number;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -19,7 +18,6 @@ const STATUS_LABELS: Record<string, string> = {
 export default function VoiceInput({
   onSubmit,
   disabled,
-  timeRemaining,
 }: VoiceInputProps) {
   const {
     isListening,
@@ -34,26 +32,9 @@ export default function VoiceInput({
   const [textInput, setTextInput] = useState("");
   const [mode, setMode] = useState<"text" | "voice">("text");
 
-  // Track transcript via ref for auto-submit to avoid unnecessary effect runs
+  // Track transcript via ref for submit
   const transcriptRef = useRef(transcript);
   transcriptRef.current = transcript;
-
-  const textInputRef = useRef(textInput);
-  textInputRef.current = textInput;
-
-  // Auto-submit when time expires
-  useEffect(() => {
-    if (timeRemaining === 0 && !disabled) {
-      const text =
-        mode === "voice" ? transcriptRef.current : textInputRef.current;
-      if (text.trim()) {
-        if (isListening) stopListening();
-        onSubmit(text.trim());
-        setTextInput("");
-        resetTranscript();
-      }
-    }
-  }, [timeRemaining, disabled, mode, isListening, stopListening, onSubmit, resetTranscript]);
 
   const handleSubmit = () => {
     const text = mode === "voice" ? transcript : textInput;
@@ -88,7 +69,7 @@ export default function VoiceInput({
             }}
             className={`px-2 py-1 rounded ${
               mode === "text"
-                ? "bg-blue-600 text-white"
+                ? "bg-amber-600 text-white"
                 : "bg-navy-700 text-slate-400"
             }`}
           >
@@ -99,7 +80,7 @@ export default function VoiceInput({
             onClick={() => setMode("voice")}
             className={`px-2 py-1 rounded ${
               mode === "voice"
-                ? "bg-blue-600 text-white"
+                ? "bg-amber-600 text-white"
                 : "bg-navy-700 text-slate-400"
             }`}
           >
@@ -138,7 +119,7 @@ export default function VoiceInput({
               type="button"
               onClick={handleSubmit}
               disabled={!transcript.trim() || disabled}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-amber-600 text-white rounded-lg font-medium text-sm hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               제출
             </button>
@@ -152,7 +133,7 @@ export default function VoiceInput({
             placeholder="발언 내용을 입력하세요..."
             disabled={disabled}
             rows={3}
-            className="w-full p-3 bg-navy-800 border border-navy-700 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 resize-none disabled:opacity-50"
+            className="w-full p-3 bg-navy-800 border border-navy-700 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500 resize-none disabled:opacity-50"
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                 handleSubmit();
@@ -165,7 +146,7 @@ export default function VoiceInput({
               type="button"
               onClick={handleSubmit}
               disabled={!textInput.trim() || disabled}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-amber-600 text-white rounded-lg font-medium text-sm hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               발언 제출
             </button>

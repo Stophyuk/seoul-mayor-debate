@@ -2,6 +2,7 @@
 
 import { DebateMessage } from "@/types/debate";
 import { HONGBOT_INFO } from "@/lib/prompts";
+import { renderMarkdown } from "@/lib/render-markdown";
 import SpeechButton from "./SpeechButton";
 
 interface OpponentPanelProps {
@@ -33,7 +34,7 @@ export default function OpponentPanel({
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: HONGBOT_INFO.color }}
           />
-          <span className="font-bold" style={{ color: HONGBOT_INFO.color }}>
+          <span className="font-bold text-base" style={{ color: HONGBOT_INFO.color }}>
             {HONGBOT_INFO.name}
           </span>
           <span className="text-xs text-slate-500">({HONGBOT_INFO.title})</span>
@@ -46,13 +47,20 @@ export default function OpponentPanel({
       {/* Content */}
       <div className="flex-1 p-4 overflow-y-auto">
         {isProcessing ? (
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span className="typing-cursor">응답을 준비하고 있습니다</span>
+          <div className="flex flex-col items-center justify-center gap-3 py-8">
+            <div className="flex gap-1.5">
+              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:0ms]" />
+              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:150ms]" />
+              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:300ms]" />
+            </div>
+            <p className="text-sm text-slate-400 animate-pulse">
+              데이터를 분석하고 반론을 준비하고 있습니다...
+            </p>
           </div>
         ) : lastMessage ? (
           <div>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              {lastMessage.content}
+            <p className="text-base text-slate-300 leading-relaxed">
+              {renderMarkdown(lastMessage.content)}
             </p>
             <div className="mt-2 flex items-center gap-1">
               <SpeechButton
@@ -63,7 +71,7 @@ export default function OpponentPanel({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-600 italic">발언 대기 중...</p>
+          <p className="text-base text-slate-600 italic">발언 대기 중...</p>
         )}
       </div>
     </div>

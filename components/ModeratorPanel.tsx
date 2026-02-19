@@ -2,6 +2,7 @@
 
 import { DebateMessage, DebatePhase } from "@/types/debate";
 import { getPhaseLabel } from "@/lib/debate-engine";
+import { renderMarkdown } from "@/lib/render-markdown";
 import SpeechButton from "./SpeechButton";
 
 interface ModeratorPanelProps {
@@ -31,16 +32,16 @@ export default function ModeratorPanel({
     <div className="bg-navy-900/80 border-b border-navy-700 px-6 py-4">
       <div className="max-w-5xl mx-auto">
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400 text-sm font-bold">
+            <div className="w-8 h-8 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400 text-base font-bold">
               MC
             </div>
-            <span className="text-gold-400 font-medium text-sm">
+            <span className="text-gold-400 font-medium text-base">
               사회자 김진행
             </span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-4 text-sm text-slate-500">
             <span>
               {round}/{totalRounds} 라운드
             </span>
@@ -54,17 +55,17 @@ export default function ModeratorPanel({
         {/* Moderator message */}
         <div className="min-h-[2rem]">
           {phase === "processing" && bridgeText ? (
-            <p className="text-gold-400 text-sm leading-relaxed animate-fade-in">
+            <p className="text-gold-400 text-base leading-relaxed animate-fade-in">
               {bridgeText}
             </p>
           ) : isProcessing && phase === "intro" ? (
-            <p className="text-slate-400 text-sm typing-cursor">
+            <p className="text-slate-400 text-base typing-cursor">
               사회자가 토론을 준비하고 있습니다
             </p>
           ) : lastModeratorMsg ? (
             <div className="flex items-start gap-2">
-              <p className="text-slate-200 text-sm leading-relaxed flex-1">
-                {lastModeratorMsg.content}
+              <p className="text-slate-200 text-base leading-relaxed flex-1">
+                {renderMarkdown(lastModeratorMsg.content)}
               </p>
               <SpeechButton
                 text={lastModeratorMsg.content}

@@ -34,14 +34,14 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
             <span className="text-slate-500">vs.</span>{" "}
             <span className="text-amber-400">홍근</span>
           </h1>
-          <p className="text-sm text-slate-500">토론 설정</p>
+          <p className="text-base text-slate-500">토론 설정</p>
         </div>
 
         {/* Form */}
         <div className="bg-navy-900 border border-navy-700 rounded-xl p-6 space-y-5">
           {/* Candidate name */}
           <div>
-            <label className="block text-sm text-slate-400 mb-1">
+            <label className="block text-base text-slate-400 mb-1">
               후보 이름
             </label>
             <input
@@ -49,11 +49,28 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
               value={candidateName}
               onChange={(e) => setCandidateName(e.target.value)}
               placeholder="홍근"
-              className="w-full px-3 py-2 bg-navy-800 border border-navy-700 rounded-lg text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2.5 bg-navy-800 border border-navy-700 rounded-lg text-white text-base placeholder-slate-600 focus:outline-none focus:border-emerald-500"
             />
-            <p className="text-xs text-slate-600 mt-1">
+            <p className="text-sm text-slate-600 mt-1">
               기본 캐릭터는 &quot;홍근&quot;입니다. 원하시면 변경할 수 있습니다.
             </p>
+          </div>
+
+          {/* Round count - moved above topics */}
+          <div>
+            <label className="block text-base text-slate-400 mb-1">
+              라운드 수
+            </label>
+            <select
+              value={roundCount}
+              onChange={(e) => setRoundCount(Number(e.target.value))}
+              className="px-3 py-2.5 bg-navy-800 border border-navy-700 rounded-lg text-white text-base focus:outline-none focus:border-emerald-500"
+            >
+              <option value={2}>2라운드</option>
+              <option value={3}>3라운드</option>
+              <option value={4}>4라운드</option>
+              <option value={5}>5라운드</option>
+            </select>
           </div>
 
           {/* Topics */}
@@ -63,33 +80,19 @@ export default function SetupScreen({ onStart }: SetupScreenProps) {
             max={roundCount}
           />
 
-          {/* Options */}
-          <div className="flex items-center gap-6">
-            <div>
-              <label className="block text-sm text-slate-400 mb-1">
-                라운드 수
-              </label>
-              <select
-                value={roundCount}
-                onChange={(e) => setRoundCount(Number(e.target.value))}
-                className="px-3 py-2 bg-navy-800 border border-navy-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-              >
-                <option value={2}>2라운드</option>
-                <option value={3}>3라운드</option>
-                <option value={4}>4라운드</option>
-                <option value={5}>5라운드</option>
-              </select>
-            </div>
-          </div>
-
           {/* Start button */}
           <button
             onClick={handleStart}
             disabled={!canStart}
-            className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-lg hover:from-emerald-500 hover:to-teal-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-base rounded-lg hover:from-emerald-500 hover:to-teal-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             토론 시작
           </button>
+          {!canStart && (
+            <p className="text-sm text-slate-500 text-center">
+              후보 이름을 입력하고 주제를 1개 이상 선택하세요
+            </p>
+          )}
         </div>
       </div>
     </div>

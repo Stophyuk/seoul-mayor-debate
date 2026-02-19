@@ -24,7 +24,7 @@ export interface DebateConfig {
   candidateName: string;
   topics: string[]; // topic IDs
   roundCount: number;
-  turnDuration: number; // seconds
+  turnDuration: number; // seconds (kept for compatibility)
 }
 
 // Single message in transcript
@@ -56,6 +56,7 @@ export interface DebateState {
   isProcessing: boolean;
   timeRemaining: number;
   bridgeText: string | null;
+  error: string | null;
 }
 
 // API request/response types

@@ -6,6 +6,7 @@ import CandidatePanel from "./CandidatePanel";
 import OpponentPanel from "./OpponentPanel";
 import FactCheckOverlay from "./FactCheckOverlay";
 import TranscriptPanel from "./TranscriptPanel";
+import ErrorBanner from "./ErrorBanner";
 import topicsData from "@/data/topics.json";
 
 interface DebateStageProps {
@@ -20,6 +21,8 @@ export default function DebateStage({ debate }: DebateStageProps) {
     advanceRound,
     advanceToClosing,
     resetDebate,
+    clearError,
+    retryLastAction,
   } = debate;
   const { phase, config, currentRound, currentTopic, messages, factChecks } =
     state;
@@ -33,6 +36,15 @@ export default function DebateStage({ debate }: DebateStageProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Error Banner */}
+      {state.error && (
+        <ErrorBanner
+          message={state.error}
+          onRetry={retryLastAction}
+          onDismiss={clearError}
+        />
+      )}
+
       {/* Moderator */}
       <ModeratorPanel
         messages={messages}
@@ -44,32 +56,35 @@ export default function DebateStage({ debate }: DebateStageProps) {
         bridgeText={state.bridgeText}
       />
 
+      {/* Fact Check Overlay - between moderator and debate panels */}
+      <FactCheckOverlay checks={factChecks} visible={showFactCheck} />
+
       {/* Main stage */}
       <div className="flex-1 max-w-5xl w-full mx-auto px-6 py-4">
         {/* Cooperation phase UI */}
         {phase === "cooperation" && (
-          <div className="mb-6 p-6 rounded-xl bg-gradient-to-r from-emerald-950/30 to-amber-950/30 border border-emerald-700/30">
-            <div className="text-center space-y-3">
-              <div className="text-2xl font-bold">
+          <div className="mb-6 p-8 rounded-xl bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-950/40 via-navy-900 to-amber-950/40 border border-emerald-700/30 relative overflow-hidden">
+            <div className="absolute inset-0 shimmer-bg opacity-20" />
+            <div className="relative text-center space-y-4">
+              <div className="text-3xl md:text-4xl font-black">
                 <span className="text-emerald-400">홍봇의 머리</span>
-                <span className="text-slate-400 mx-2">+</span>
+                <span className="text-slate-400 mx-3">+</span>
                 <span className="text-amber-400">{config.candidateName}의 심장</span>
               </div>
-              <p className="text-slate-400 text-sm">
+              <p className="text-slate-300 text-lg">
                 대결을 넘어 협력으로 — 서울의 미래를 함께 만들어갑니다
               </p>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 h-[calc(100vh-22rem)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100vh-22rem)]">
           {/* Human candidate */}
           <CandidatePanel
             name={config.candidateName}
             party=""
             messages={messages}
             isActive={phase === "human-turn"}
-            timeRemaining={state.timeRemaining}
             onSubmit={submitSpeech}
             isProcessing={state.isProcessing}
           />
@@ -115,9 +130,6 @@ export default function DebateStage({ debate }: DebateStageProps) {
           )}
         </div>
       </div>
-
-      {/* Fact Check Overlay */}
-      <FactCheckOverlay checks={factChecks} visible={showFactCheck} />
 
       {/* Transcript */}
       <TranscriptPanel messages={messages} />
